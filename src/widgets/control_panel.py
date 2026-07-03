@@ -5,6 +5,14 @@ Dieses Widget enthält Buttons und Eingabefelder für Kaufen, Reparieren,
 Werbung und Flugplanung.
 """
 
-class ControlPanelWidget:
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
+
+
+class ControlPanelWidget(QWidget):
     """Repräsentiert das Aktionspanel der Spieloberfläche."""
-    pass
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout = QVBoxLayout()
+        layout.addWidget(QLabel("Control Panel"))
+        self.setLayout(layout)
