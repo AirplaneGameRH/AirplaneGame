@@ -16,12 +16,14 @@ from .ui_manager import UIManager
 from .entities import Player, Airport
 
 
-def main():
-    """Startet das Spiel."""
-    app = QApplication([])
+def main(app=None):
+    """Erzeugt das Hauptfenster und gibt es zurück."""
+    app = app or QApplication.instance() or QApplication([])
     assets = AssetManager()
     renderer = AirportRenderer()
     game = GameLogic()
     ui = UIManager(game, renderer, assets)
     ui.show()
-    return app.exec()
+    ui.raise_()
+    ui.activateWindow()
+    return ui
