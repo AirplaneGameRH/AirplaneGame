@@ -1,0 +1,19 @@
+# Runtime dependencies
+PyQt6>=6.5
+Pillow>=9.5
+# Optional / useful libraries for rendering and numerical work
+pygame>=2.1
+numpy>=1.25
+
+# Development / tooling
+pytest>=7.4
+black>=24.1
+flake8>=6.0
+mypy>=1.9
+isort>=5.12
+pre-commit>=3.4
+
+# Notes:
+# - Install runtime deps for running the game: `pip install -r src/requirements.txt`
+# - Dev tools are listed here for convenience; you can split into requirements-dev.txt if preferred.
+
