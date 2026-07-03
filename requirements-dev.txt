@@ -1,0 +1,12 @@
+# Development and testing dependencies
+-r requirements.txt
+
+pytest>=7.4
+black>=24.1
+flake8>=6.0
+mypy>=1.9
+isort>=5.12
+pre-commit>=3.4
+
+# Installation:
+# pip install -r requirements-dev.txt
