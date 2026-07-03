@@ -9,3 +9,19 @@ Geplante Aufgaben:
 - UI-Manager und Game-Logic-Komponenten instanziieren
 - Hauptaktualisierungsschleife starten
 """
+
+from PyQt6.QtWidgets import QApplication
+from .core import GameLogic, AirportRenderer, AssetManager
+from .ui_manager import UIManager
+from .entities import Player, Airport
+
+
+def main():
+    """Startet das Spiel."""
+    app = QApplication([])
+    assets = AssetManager()
+    renderer = AirportRenderer()
+    game = GameLogic()
+    ui = UIManager(game, renderer, assets)
+    ui.show()
+    return app.exec()
