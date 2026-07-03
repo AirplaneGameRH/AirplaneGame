@@ -10,4 +10,3 @@ Geplante Aufgaben:
 - Animation von Start- und Landebewegungen
 - Integration in die PyQt6-Oberfläche
 """
-"""du penis""" 
