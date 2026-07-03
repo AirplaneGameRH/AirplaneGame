@@ -1,11 +1,5 @@
-"""
-Asset-Manager für Spielressourcen.
+"""Kompatibilitäts-Wrapper für den Asset-Manager."""
 
-Dieses Modul lädt und verwaltet Texturen, Bilder und andere Assets,
-die für die Darstellung des Towers, der Bildschirme und der Flugzeuge benötigt werden.
+from .core.assets import AssetManager, MeshAsset, TextureAsset
 
-Geplante Aufgaben:
-- Laden von Bilddateien und Texturen
-- Caching von Assets für performantere Darstellung
-- Verwaltung von UI- und Spielgrafiken
-"""
+__all__ = ["AssetManager", "MeshAsset", "TextureAsset"]
