@@ -14,9 +14,27 @@ Geplante Funktionen:
 from pathlib import Path
 
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget
 
 from .widgets import DashboardWidget, ControlPanelWidget, StatusPanelWidget
+
+
+def _apply_window_icon(widget):
+    """Setzt das Fenstericon für das Hauptfenster und die Taskleiste."""
+    icon_paths = (
+        Path(__file__).resolve().parent.parent / "Images" / "AirplaneGameICO.ico",
+        Path(__file__).resolve().parent.parent / "Images" / "AirplaneGameICO.png",
+        Path(__file__).resolve().parent.parent / "Images" / "AirplaneGame.png",
+    )
+    for icon_path in icon_paths:
+        if icon_path.exists():
+            icon = QIcon(str(icon_path))
+            if not icon.isNull():
+                widget.setWindowIcon(icon)
+                app = QApplication.instance()
+                if app is not None:
+                    app.setWindowIcon(icon)
+                return
 
 
 class UIManager(QWidget):
@@ -32,9 +50,7 @@ class UIManager(QWidget):
         self.status_panel = StatusPanelWidget()
 
         self.setWindowTitle("AirplaneGame")
-        icon_path = Path(__file__).resolve().parent.parent / "Images" / "AirplaneGameICO.ico"
-        if icon_path.exists():
-            self.setWindowIcon(QIcon(str(icon_path)))
+        _apply_window_icon(self)
         self.resize(1024, 720)
 
         layout = QVBoxLayout(self)
