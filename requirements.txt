@@ -1,0 +1,8 @@
+# Runtime dependencies
+PyQt6>=6.5
+Pillow>=9.5
+pygame>=2.1
+numpy>=1.25
+
+# Installation:
+# pip install -r requirements.txt

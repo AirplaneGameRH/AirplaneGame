@@ -1,7 +1,10 @@
-#vscode
+# IDE & Editor
 .vscode/
-
-
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -48,6 +51,21 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
+.pytest_cache/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Linting
+.flake8
+.pylintrc
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
 nosetests.xml
 coverage.xml
 *.cover
