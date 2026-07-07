@@ -25,7 +25,7 @@ except ImportError:  # pragma: no cover - optional dependency
     trimesh = None
 
 
-@dataclass(slots=True)
+@dataclass
 class TextureAsset:
     """Repräsentiert eine geladene Textur oder ein Bild."""
 
@@ -38,7 +38,7 @@ class TextureAsset:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
-@dataclass(slots=True)
+@dataclass
 class MeshAsset:
     """Repräsentiert ein geladenes 3D-Mesh."""
 

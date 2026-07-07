@@ -1,6 +1,7 @@
 """Startet die Anwendung und öffnet das Hauptfenster."""
 
 import os
+import platform
 import sys
 from pathlib import Path
 
@@ -13,16 +14,7 @@ from src.main import main
 
 def _apply_app_icon(app):
     """Setzt das Anwendungsicon für Fenster und Taskleiste."""
-<<<<<<< HEAD
     for icon_path in ICON_PATHS:
-=======
-    icon_paths = (
-        Path(__file__).resolve().parent / "assets" / "images" / "AirplaneGameICO.ico",
-        Path(__file__).resolve().parent / "assets" / "images" / "AirplaneGameICO.png",
-        Path(__file__).resolve().parent / "assets" / "images" / "AirplaneGame.png",
-    )
-    for icon_path in icon_paths:
->>>>>>> c40922831e19e83bcd714a7f5652f509bfd562cb
         if icon_path.exists():
             icon = QIcon(str(icon_path))
             if not icon.isNull():
@@ -30,20 +22,31 @@ def _apply_app_icon(app):
                 return
 
 
+def _configure_qt():
+    """Konfiguriert Qt für plattformübergreifendes Verhalten."""
+    if QApplication.instance() is None:
+        from PyQt6.QtCore import Qt
+
+        if hasattr(Qt.ApplicationAttribute, "AA_EnableHighDpiScaling"):
+            QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
+        if hasattr(Qt.ApplicationAttribute, "AA_UseHighDpiPixmaps"):
+            QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
+
+
 def _launch_with_pythonw():
     """Startet die GUI auf Windows über pythonw, damit die Taskleiste das eigene Icon nutzt."""
-    if os.name != "nt":
+    if platform.system() != "Windows":
         return False
 
-    python_exe = sys.executable
-    if not python_exe.lower().endswith("python.exe"):
+    python_exe = Path(sys.executable)
+    if python_exe.name.lower() != "python.exe":
         return False
 
-    pythonw_exe = python_exe.replace("python.exe", "pythonw.exe")
-    if not Path(pythonw_exe).exists():
+    pythonw_exe = python_exe.with_name("pythonw.exe")
+    if not pythonw_exe.exists():
         return False
 
-    os.execv(pythonw_exe, [pythonw_exe, str(Path(__file__).resolve()), *sys.argv[1:]])
+    os.execv(str(pythonw_exe), [str(pythonw_exe), str(Path(__file__).resolve()), *sys.argv[1:]])
     return True
 
 
@@ -52,6 +55,7 @@ def run_game():
     if _launch_with_pythonw():
         return 0
 
+    _configure_qt()
     app = QApplication.instance() or QApplication(sys.argv)
     app.setApplicationName("AirplaneGame")
     _apply_app_icon(app)
