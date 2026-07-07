@@ -1,5 +1,6 @@
 """Startet die Anwendung und öffnet das Hauptfenster."""
 
+import ctypes
 import os
 import platform
 import sys
@@ -10,6 +11,19 @@ from PyQt6.QtWidgets import QApplication
 
 from src.config import ICON_PATHS
 from src.main import main
+
+
+def _set_windows_taskbar_icon():
+    """Setzt das AppUserModelId auf Windows für die korrekte Taskbar-Anzeige."""
+    if platform.system() != "Windows":
+        return
+    
+    try:
+        # Set AppUserModelId für die Taskbar auf Windows
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("AirplaneGame.AirplaneGame")
+    except (AttributeError, OSError):
+        # Fehlerbehandlung falls SetCurrentProcessExplicitAppUserModelID nicht verfügbar ist
+        pass
 
 
 def _apply_app_icon(app):
@@ -52,12 +66,14 @@ def _launch_with_pythonw():
 
 def run_game():
     """Erzeugt die Qt-Anwendung und zeigt das Hauptfenster an."""
+    _set_windows_taskbar_icon()
     if _launch_with_pythonw():
         return 0
 
     _configure_qt()
     app = QApplication.instance() or QApplication(sys.argv)
     app.setApplicationName("AirplaneGame")
+    app.setApplicationVersion("1.0")
     _apply_app_icon(app)
     app.setQuitOnLastWindowClosed(True)
 

@@ -12,7 +12,7 @@ Geplante Funktionen:
 """
 
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QLabel, QVBoxLayout, QMainWindow, QWidget
 
 from .config import ICON_PATHS
 from .widgets import DashboardWidget, ControlPanelWidget, StatusPanelWidget
@@ -31,7 +31,7 @@ def _apply_window_icon(widget):
                 return
 
 
-class UIManager(QWidget):
+class UIManager(QMainWindow):
     """Verwaltet das Hauptfenster und die UI-Komponenten."""
 
     def __init__(self, game_logic, renderer, assets):
@@ -47,10 +47,11 @@ class UIManager(QWidget):
         _apply_window_icon(self)
         self.resize(1024, 720)
 
-        layout = QVBoxLayout(self)
+        central_widget = QWidget()
+        layout = QVBoxLayout(central_widget)
         layout.addWidget(QLabel("AirplaneGame startet..."))
         layout.addWidget(QLabel("Dashboard, Control Panel und Status Panel werden initialisiert."))
-        self.setLayout(layout)
+        self.setCentralWidget(central_widget)
 
     def show(self):
         """Zeigt das Hauptfenster an."""
