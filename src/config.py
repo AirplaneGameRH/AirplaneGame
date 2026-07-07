@@ -12,6 +12,11 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ASSETS_DIR = PROJECT_ROOT / "assets"
 IMAGES_DIR = ASSETS_DIR / "images"
 SOUNDS_DIR = ASSETS_DIR / "sounds"
+ICON_PATHS = (
+    IMAGES_DIR / "AirplaneGameICO.ico",
+    IMAGES_DIR / "AirplaneGameICO.png",
+    IMAGES_DIR / "AirplaneGame.png",
+)
 
 # Spielfenster
 WINDOW_WIDTH = 1200

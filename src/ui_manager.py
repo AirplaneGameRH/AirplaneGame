@@ -11,22 +11,16 @@ Geplante Funktionen:
 - Responsives Layout für unterschiedliche Fenstergrößen
 """
 
-from pathlib import Path
-
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget
 
+from .config import ICON_PATHS
 from .widgets import DashboardWidget, ControlPanelWidget, StatusPanelWidget
 
 
 def _apply_window_icon(widget):
     """Setzt das Fenstericon für das Hauptfenster und die Taskleiste."""
-    icon_paths = (
-        Path(__file__).resolve().parent.parent / "Images" / "AirplaneGameICO.ico",
-        Path(__file__).resolve().parent.parent / "Images" / "AirplaneGameICO.png",
-        Path(__file__).resolve().parent.parent / "Images" / "AirplaneGame.png",
-    )
-    for icon_path in icon_paths:
+    for icon_path in ICON_PATHS:
         if icon_path.exists():
             icon = QIcon(str(icon_path))
             if not icon.isNull():
