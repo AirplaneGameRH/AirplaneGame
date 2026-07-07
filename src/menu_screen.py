@@ -23,16 +23,17 @@ class MenuScreen(QWidget):
 
     def _create_ui(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setSpacing(16)
+        layout.setContentsMargins(40, 40, 40, 40)
 
         title = QLabel(self.translator.t("main_menu_title"))
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setAlignment(Qt.AlignmentFlag.AlignLeft)
         title.setStyleSheet("font-size: 28px; font-weight: bold; color: #ffffff;")
         layout.addWidget(title)
 
         instruction = QLabel(self.translator.t("menu_instruction"))
-        instruction.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        instruction.setAlignment(Qt.AlignmentFlag.AlignLeft)
         instruction.setStyleSheet("font-size: 16px; color: #cccccc;")
         layout.addWidget(instruction)
 
@@ -46,7 +47,7 @@ class MenuScreen(QWidget):
                 "QPushButton { background-color: #4CAF50; color: white; border-radius: 10px; font-size: 16px; }"
                 "QPushButton:hover { background-color: #45a049; }"
             )
-            layout.addWidget(button, alignment=Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(button, alignment=Qt.AlignmentFlag.AlignLeft)
 
         layout.addStretch()
 
@@ -67,26 +68,28 @@ class SettingsScreen(QWidget):
         self._create_ui()
 
     def _create_ui(self) -> None:
-        layout = QGridLayout(self)
+        layout = QVBoxLayout(self)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         layout.setContentsMargins(40, 40, 40, 40)
-        layout.setHorizontalSpacing(16)
-        layout.setVerticalSpacing(16)
+        layout.setSpacing(16)
 
         title = QLabel(self.translator.t("settings_title"))
         title.setStyleSheet("font-size: 26px; font-weight: bold; color: #ffffff;")
-        layout.addWidget(title, 0, 0, 1, 2)
+        layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignLeft)
 
         language_label = QLabel(self.translator.t("language_label"))
         language_label.setStyleSheet("font-size: 18px; color: #ffffff;")
-        layout.addWidget(language_label, 1, 0)
+        layout.addWidget(language_label, alignment=Qt.AlignmentFlag.AlignLeft)
 
         self.language_combo = QComboBox()
+        self.language_combo.setMaximumWidth(240)
         self.language_combo.setStyleSheet(
             "QComboBox { background-color: #2d2d2d; color: white; border-radius: 6px; padding: 8px; }"
             "QComboBox QAbstractItemView { background-color: #2d2d2d; color: white; }"
         )
-        layout.addWidget(self.language_combo, 1, 1)
+        layout.addWidget(self.language_combo, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        layout.addStretch()
 
         self.back_button = QPushButton(self.translator.t("back"))
         self.back_button.setFixedSize(140, 44)
@@ -94,7 +97,7 @@ class SettingsScreen(QWidget):
             "QPushButton { background-color: #4CAF50; color: white; border-radius: 10px; font-size: 16px; }"
             "QPushButton:hover { background-color: #45a049; }"
         )
-        layout.addWidget(self.back_button, 2, 0, 1, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(self.back_button, alignment=Qt.AlignmentFlag.AlignLeft)
 
         self._populate_languages()
 
