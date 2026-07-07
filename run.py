@@ -13,7 +13,16 @@ from src.main import main
 
 def _apply_app_icon(app):
     """Setzt das Anwendungsicon für Fenster und Taskleiste."""
+<<<<<<< HEAD
     for icon_path in ICON_PATHS:
+=======
+    icon_paths = (
+        Path(__file__).resolve().parent / "assets" / "images" / "AirplaneGameICO.ico",
+        Path(__file__).resolve().parent / "assets" / "images" / "AirplaneGameICO.png",
+        Path(__file__).resolve().parent / "assets" / "images" / "AirplaneGame.png",
+    )
+    for icon_path in icon_paths:
+>>>>>>> c40922831e19e83bcd714a7f5652f509bfd562cb
         if icon_path.exists():
             icon = QIcon(str(icon_path))
             if not icon.isNull():

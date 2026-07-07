@@ -20,7 +20,16 @@ from .widgets import DashboardWidget, ControlPanelWidget, StatusPanelWidget
 
 def _apply_window_icon(widget):
     """Setzt das Fenstericon für das Hauptfenster und die Taskleiste."""
+<<<<<<< HEAD
     for icon_path in ICON_PATHS:
+=======
+    icon_paths = (
+        Path(__file__).resolve().parent.parent / "assets" / "images" / "AirplaneGameICO.ico",
+        Path(__file__).resolve().parent.parent / "assets" / "images" / "AirplaneGameICO.png",
+        Path(__file__).resolve().parent.parent / "assets" / "images" / "AirplaneGame.png",
+    )
+    for icon_path in icon_paths:
+>>>>>>> c40922831e19e83bcd714a7f5652f509bfd562cb
         if icon_path.exists():
             icon = QIcon(str(icon_path))
             if not icon.isNull():
