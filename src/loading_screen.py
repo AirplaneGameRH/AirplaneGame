@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, pyqtPrope
 from PyQt6.QtGui import QIcon, QColor, QPainter, QBrush, QPen, QPixmap
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
 from .config import ICON_PATHS, IMAGES_DIR
+from .i18n import Translator
 
 
 class CircularProgressBar(QWidget):
@@ -99,15 +100,16 @@ class CircularProgressBar(QWidget):
 class LoadingScreen(QWidget):
     """Ladebildschirm als Widget mit AirplaneGame.png Hintergrund."""
 
-    def __init__(self, parent=None):
+    def __init__(self, translator: 'Translator' = None, parent=None):
         super().__init__(parent)
+        self.translator = translator or Translator()
         self.background_pixmap = None
-        
+
         # Lade Hintergrundbild
         airplane_image = IMAGES_DIR / "AirplaneGame.png"
         if airplane_image.exists():
             self.background_pixmap = QPixmap(str(airplane_image))
-        
+
         self.setStyleSheet("background-color: #1a1a1a;")
 
         # Layout für den Container
@@ -120,7 +122,7 @@ class LoadingScreen(QWidget):
         layout.addWidget(self.progress_bar, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         # Text unter dem Balken
-        self.status_label = QLabel("Initialisiere Spiel...")
+        self.status_label = QLabel(self.translator.t("loading_initial"))
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.status_label.setStyleSheet(
             "color: #4CAF50; font-size: 14px; font-weight: bold; margin-top: 20px; background-color: transparent;"
