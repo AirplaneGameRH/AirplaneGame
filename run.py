@@ -12,9 +12,9 @@ from src.main import main
 def _apply_app_icon(app):
     """Setzt das Anwendungsicon für Fenster und Taskleiste."""
     icon_paths = (
-        Path(__file__).resolve().parent / "Images" / "AirplaneGameICO.ico",
-        Path(__file__).resolve().parent / "Images" / "AirplaneGameICO.png",
-        Path(__file__).resolve().parent / "Images" / "AirplaneGame.png",
+        Path(__file__).resolve().parent / "assets" / "images" / "AirplaneGameICO.ico",
+        Path(__file__).resolve().parent / "assets" / "images" / "AirplaneGameICO.png",
+        Path(__file__).resolve().parent / "assets" / "images" / "AirplaneGame.png",
     )
     for icon_path in icon_paths:
         if icon_path.exists():
