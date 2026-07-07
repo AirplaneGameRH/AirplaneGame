@@ -6,13 +6,24 @@ das Laden der Spielressourcen und das Starten der Hauptspiel-Logik.
 """
 
 from PyQt6.QtCore import QTimer, Qt
-from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QStackedLayout, QPushButton, QHBoxLayout
+from PyQt6.QtWidgets import (
+    QApplication,
+    QWidget,
+    QVBoxLayout,
+    QLabel,
+    QStackedLayout,
+    QPushButton,
+    QHBoxLayout,
+    QGridLayout,
+    QGraphicsBlurEffect,
+)
 import time
 from .i18n import Translator
 from .loading_screen import LoadingScreen
 from .menu_screen import MenuScreen, SettingsScreen
 from .core import GameLogic, AirportRenderer, AssetManager
 from .ui_manager import UIManager, BackgroundWidget
+from .audio_manager import BackgroundMusic
 
 def main(app=None):
     """Erzeugt das Hauptfenster und gibt es zurück."""
@@ -52,7 +63,7 @@ def main(app=None):
         window.assets = assets
 
         loading_screen.set_progress(100)
-        loading_screen.set_status(translator.t("finished"))
+        loading_screen.set_status("")
         app.processEvents()
 
         def show_main_ui():
@@ -65,8 +76,12 @@ def main(app=None):
 
             # Erstelle BackgroundWidget mit Wallpaper
             bg_widget = BackgroundWidget()
-            bg_layout = QVBoxLayout(bg_widget)
-            bg_layout.setContentsMargins(0, 0, 0, 0)
+
+            # Inhaltsebene (Menü, Einstellungen, Quit-Button) als transparentes Overlay
+            content_widget = QWidget()
+            content_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+            content_layout = QVBoxLayout(content_widget)
+            content_layout.setContentsMargins(0, 0, 0, 0)
 
             window.menu_screen = MenuScreen(translator, parent=window)
             window.settings_screen = SettingsScreen(translator, parent=window)
@@ -82,8 +97,21 @@ def main(app=None):
                 lambda _: language_changed()
             )
 
+            def apply_volumes() -> None:
+                master = window.settings_screen.master_volume / 100.0
+                music = window.settings_screen.music_volume / 100.0
+                if window.background_music is not None:
+                    window.background_music.set_volume(master * music)
+
+            window.settings_screen.master_slider.valueChanged.connect(
+                lambda v: (setattr(window.settings_screen, "master_volume", v), apply_volumes())
+            )
+            window.settings_screen.music_slider.valueChanged.connect(
+                lambda v: (setattr(window.settings_screen, "music_volume", v), apply_volumes())
+            )
+
             window.stack = QStackedLayout()
-            bg_layout.addLayout(window.stack, 1)  # stretch=1: nimmt ganzen verfügbaren Platz
+            content_layout.addLayout(window.stack, 1)  # stretch=1: nimmt ganzen verfügbaren Platz
             window.stack.addWidget(window.menu_screen)
             window.stack.addWidget(window.settings_screen)
 
@@ -118,18 +146,40 @@ def main(app=None):
             """)
             quit_layout.addWidget(quit_button)
             quit_layout.setContentsMargins(20, 0, 20, 20)
-            bg_layout.addLayout(quit_layout, 0)  # stretch=0: nimmt minimal Platz
+            content_layout.addLayout(quit_layout, 0)  # stretch=0: nimmt minimal Platz
 
-            window.setCentralWidget(bg_widget)
+            # Hintergrund und Inhalt überlagern (beide füllen den Bildschirm)
+            central = QWidget()
+            grid = QGridLayout(central)
+            grid.setContentsMargins(0, 0, 0, 0)
+            grid.setSpacing(0)
+            grid.addWidget(bg_widget, 0, 0)
+            grid.addWidget(content_widget, 0, 0)
+
+            window.bg_widget = bg_widget
+
+            window.setCentralWidget(central)
             window.stack.setCurrentWidget(window.menu_screen)
+
+            # Starte die Hintergrundmusik in Dauerschleife
+            window.background_music = BackgroundMusic(volume=0.3)
+            window.background_music.play()
+            window.settings_screen.master_volume = 100
+            window.settings_screen.music_volume = 30
+            window.settings_screen.master_slider.setValue(100)
+            window.settings_screen.music_slider.setValue(30)
             return False
 
         def show_menu() -> None:
             window.menu_screen.update_translations()
+            window.bg_widget.setGraphicsEffect(None)
             window.stack.setCurrentWidget(window.menu_screen)
 
         def show_settings() -> None:
             window.settings_screen.update_translations()
+            blur = QGraphicsBlurEffect()
+            blur.setBlurRadius(18)
+            window.bg_widget.setGraphicsEffect(blur)
             window.stack.setCurrentWidget(window.settings_screen)
 
         def show_placeholder(window_obj: UIManager, text: str) -> None:

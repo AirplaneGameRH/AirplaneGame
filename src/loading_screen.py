@@ -4,7 +4,7 @@ Ladebildschirm mit animiertem grünem Fortschrittsring.
 
 from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, pyqtProperty
 from PyQt6.QtGui import QIcon, QColor, QPainter, QBrush, QPen, QPixmap
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from .config import ICON_PATHS, IMAGES_DIR
 from .i18n import Translator
 
@@ -16,7 +16,8 @@ class CircularProgressBar(QWidget):
         super().__init__(parent)
         self._progress = 0
         self._rotation = 0
-        self.setMinimumSize(150, 150)
+        self.setMinimumSize(64, 64)
+        self.setMaximumSize(64, 64)
         self.setStyleSheet("background-color: transparent;")
 
     def set_progress(self, value):
@@ -55,15 +56,15 @@ class CircularProgressBar(QWidget):
         size = self.size()
         center_x = size.width() / 2
         center_y = size.height() / 2
-        radius = min(center_x, center_y) - 10
+        radius = min(center_x, center_y) - 6
 
-        # Hintergrundkreis (hell grau)
-        painter.setBrush(QBrush(QColor(200, 200, 200, 50)))
+        # Hintergrundkreis (durchgehend blau)
+        painter.setBrush(QBrush(QColor(33, 150, 243, 255)))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(int(center_x - radius), int(center_y - radius), int(radius * 2), int(radius * 2))
 
-        # Fortschrittsring (grün)
-        pen = QPen(QColor(76, 175, 80), 8, Qt.PenStyle.SolidLine)
+        # Fortschrittsring (hell/leuchtend)
+        pen = QPen(QColor(120, 220, 255), 5, Qt.PenStyle.SolidLine)
         pen.setCapStyle(Qt.PenCapStyle.RoundCap)
         painter.setPen(pen)
         painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -83,7 +84,7 @@ class CircularProgressBar(QWidget):
 
         # Prozenttext in der Mitte
         text = f"{self._progress}%"
-        painter.setPen(QPen(QColor(76, 175, 80)))
+        painter.setPen(QPen(QColor(225, 245, 255)))
         painter.setFont(self.font())
         font_metrics = painter.fontMetrics()
         text_width = font_metrics.horizontalAdvance(text)
@@ -114,21 +115,29 @@ class LoadingScreen(QWidget):
 
         # Layout für den Container
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 50)
-        layout.addStretch()
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.addStretch()  # Inhalt nach oben drücken, Spinner unten
 
-        # Progressbalken
-        self.progress_bar = CircularProgressBar()
-        layout.addWidget(self.progress_bar, alignment=Qt.AlignmentFlag.AlignHCenter)
+        # Untere Leiste: Spinner klein in der unteren rechten Ecke
+        bottom_layout = QHBoxLayout()
+        bottom_layout.addStretch()
 
-        # Text unter dem Balken
+        corner = QVBoxLayout()
+        corner.setSpacing(6)
+        corner.setAlignment(Qt.AlignmentFlag.AlignRight)
+
         self.status_label = QLabel(self.translator.t("loading_initial"))
-        self.status_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.status_label.setAlignment(Qt.AlignmentFlag.AlignRight)
         self.status_label.setStyleSheet(
-            "color: #4CAF50; font-size: 14px; font-weight: bold; margin-top: 20px; background-color: transparent;"
+            "color: #B3E5FC; font-size: 13px; font-weight: bold; background-color: transparent;"
         )
-        layout.addWidget(self.status_label)
-        layout.addStretch()
+        corner.addWidget(self.status_label)
+
+        self.progress_bar = CircularProgressBar()
+        corner.addWidget(self.progress_bar, alignment=Qt.AlignmentFlag.AlignRight)
+
+        bottom_layout.addLayout(corner)
+        layout.addLayout(bottom_layout)
 
         # Animationen
         self._setup_animations()
@@ -185,4 +194,4 @@ class LoadingScreen(QWidget):
         self.rotation_animation.stop()
         self.progress_animation.stop()
         self.progress_bar.set_progress(100)
-        self.status_label.setText("Fertig!")
+        self.status_label.setText("")
