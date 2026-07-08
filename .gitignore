@@ -1,4 +1,5 @@
 # IDE & Editor
+.kilo/
 .vscode/
 .idea/
 *.swp
