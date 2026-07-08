@@ -9,11 +9,11 @@ description = "2D Airplane Idle Game - Airport Management Simulator"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
-authors = [{name = "Hannah Pregler"}]
+authors = [{name = "Rufus Pregler"}, {name = "Hannes Heyer"}]
 
 [project.urls]
-Repository = "https://github.com/hannahpregler/AirportGame"
-Issues = "https://github.com/hannahpregler/AirportGame/issues"
+Repository = "https://github.com/AirplaneGameRH/AirplaneGame"
+Issues = "https://github.com/AirplaneGame/AirplaneGame/issues"
 
 [project.optional-dependencies]
 dev = [
