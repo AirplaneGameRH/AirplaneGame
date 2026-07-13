@@ -1,6 +1,6 @@
 """Hauptmenü und Einstellungen für das AirportGame."""
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import (
     QComboBox,
     QGridLayout,
@@ -14,7 +14,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .i18n import Translator
-from .settings import get_settings, save_settings
+from .settings import get_settings
 
 
 class MenuScreen(QWidget):
@@ -24,6 +24,7 @@ class MenuScreen(QWidget):
         super().__init__(parent)
         self.translator = translator
         self._create_ui()
+        self.translator.language_changed.connect(self.update_translations)
 
     def _create_ui(self) -> None:
         layout = QVBoxLayout(self)
@@ -31,15 +32,15 @@ class MenuScreen(QWidget):
         layout.setSpacing(16)
         layout.setContentsMargins(40, 40, 40, 40)
 
-        title = QLabel(self.translator.t("main_menu_title"))
-        title.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        title.setStyleSheet("font-size: 28px; font-weight: bold; color: #ffffff;")
-        layout.addWidget(title)
+        self.title_label = QLabel(self.translator.t("main_menu_title"))
+        self.title_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.title_label.setStyleSheet("font-size: 28px; font-weight: bold; color: #ffffff;")
+        layout.addWidget(self.title_label)
 
-        instruction = QLabel(self.translator.t("menu_instruction"))
-        instruction.setAlignment(Qt.AlignmentFlag.AlignLeft)
-        instruction.setStyleSheet("font-size: 16px; color: #cccccc;")
-        layout.addWidget(instruction)
+        self.instruction_label = QLabel(self.translator.t("menu_instruction"))
+        self.instruction_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.instruction_label.setStyleSheet("font-size: 16px; color: #cccccc;")
+        layout.addWidget(self.instruction_label)
 
         self.new_game_button = QPushButton(self.translator.t("new_game"))
         self.load_game_button = QPushButton(self.translator.t("load_game"))
@@ -56,8 +57,8 @@ class MenuScreen(QWidget):
         layout.addStretch()
 
     def update_translations(self) -> None:
-        self.layout().itemAt(0).widget().setText(self.translator.t("main_menu_title"))
-        self.layout().itemAt(1).widget().setText(self.translator.t("menu_instruction"))
+        self.title_label.setText(self.translator.t("main_menu_title"))
+        self.instruction_label.setText(self.translator.t("menu_instruction"))
         self.new_game_button.setText(self.translator.t("new_game"))
         self.load_game_button.setText(self.translator.t("load_game"))
         self.settings_button.setText(self.translator.t("settings"))
@@ -72,6 +73,8 @@ class SettingsScreen(QWidget):
         settings = get_settings()
         self.master_volume = settings.get("master_volume", 100)
         self.music_volume = settings.get("music_volume", 30)
+        self._translation_pending = False
+        self._signal_connected = False
         self._create_ui()
 
     def _create_ui(self) -> None:
@@ -82,9 +85,9 @@ class SettingsScreen(QWidget):
         layout.setContentsMargins(40, 40, 40, 40)
         layout.setSpacing(16)
 
-        title = QLabel(self.translator.t("settings_title"))
-        title.setStyleSheet("font-size: 28px; font-weight: bold; color: #ffffff;")
-        layout.addWidget(title, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.title_label = QLabel(self.translator.t("settings_title"))
+        self.title_label.setStyleSheet("font-size: 28px; font-weight: bold; color: #ffffff;")
+        layout.addWidget(self.title_label, alignment=Qt.AlignmentFlag.AlignLeft)
 
         self.tabs = QTabWidget()
         self.tabs.setStyleSheet(
@@ -95,8 +98,11 @@ class SettingsScreen(QWidget):
         )
         layout.addWidget(self.tabs)
 
-        self.tabs.addTab(self._create_general_tab(), self.translator.t("settings_tab_general"))
-        self.tabs.addTab(self._create_audio_tab(), self.translator.t("settings_tab_audio"))
+        self.general_tab = self._create_general_tab()
+        self.audio_tab = self._create_audio_tab()
+        
+        self.tabs.addTab(self.general_tab, self.translator.t("settings_tab_general"))
+        self.tabs.addTab(self.audio_tab, self.translator.t("settings_tab_audio"))
 
         layout.addStretch()
 
@@ -115,9 +121,9 @@ class SettingsScreen(QWidget):
         tab_layout.setSpacing(12)
         tab_layout.setContentsMargins(20, 20, 20, 20)
 
-        language_label = QLabel(self.translator.t("language_label"))
-        language_label.setStyleSheet("font-size: 20px; color: #ffffff;")
-        tab_layout.addWidget(language_label, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.language_label = QLabel(self.translator.t("language_label"))
+        self.language_label.setStyleSheet("font-size: 20px; color: #ffffff;")
+        tab_layout.addWidget(self.language_label, alignment=Qt.AlignmentFlag.AlignLeft)
 
         self.language_combo = QComboBox()
         self.language_combo.setMaximumWidth(300)
@@ -127,8 +133,15 @@ class SettingsScreen(QWidget):
         )
         tab_layout.addWidget(self.language_combo, alignment=Qt.AlignmentFlag.AlignLeft)
 
+        self.translation_status = QLabel("")
+        self.translation_status.setStyleSheet("font-size: 14px; color: #888; margin-top: 8px;")
+        self.translation_status.hide()
+        tab_layout.addWidget(self.translation_status, alignment=Qt.AlignmentFlag.AlignLeft)
+
         tab_layout.addStretch()
         self._populate_languages()
+        
+        self.language_combo.currentIndexChanged.connect(self._on_language_changed)
         return tab
 
     def _create_audio_tab(self) -> QWidget:
@@ -158,7 +171,6 @@ class SettingsScreen(QWidget):
         return tab
 
     def _create_volume_row(self, label_text: str):
-        """Erstellt eine Zeile mit Beschriftung, Regler und Wertanzeige."""
         row = QWidget()
         row_layout = QVBoxLayout(row)
         row_layout.setContentsMargins(0, 0, 0, 0)
@@ -189,32 +201,63 @@ class SettingsScreen(QWidget):
         self.language_combo.blockSignals(True)
         try:
             self.language_combo.clear()
-            settings = get_settings()
-            saved_lang = settings.get("language", self.translator.language)
-            for code in self.translator.available_languages():
-                self.language_combo.addItem(self.translator.language_name(code), code)
-            current_index = self.translator.available_languages().index(saved_lang)
+            current_lang = self.translator.language
+            for code in self.translator.available_languages:
+                name = self.translator.language_name(code)
+                is_cached = self.translator.is_translation_ready(code)
+                display_name = f"{name} {'✓' if is_cached else '⟳'}"
+                self.language_combo.addItem(display_name, code)
+            current_index = self.translator.available_languages.index(current_lang)
             self.language_combo.setCurrentIndex(current_index)
         finally:
             self.language_combo.blockSignals(False)
 
+    def _on_language_changed(self, index: int) -> None:
+        if index < 0:
+            return
+
+        lang_code = self.language_combo.itemData(index)
+        if not lang_code or lang_code == self.translator.language:
+            return
+
+        self._translation_pending = True
+        self.translation_status.setText(f"Lade {self.translator.language_name(lang_code)}...")
+        self.translation_status.show()
+        self.language_combo.setEnabled(False)
+
+        if not self._signal_connected:
+            self.translator.language_changed.connect(self._on_language_ready)
+            self._signal_connected = True
+
+        self.translator.set_language(lang_code)
+
+    def _on_language_ready(self, lang_code: str) -> None:
+        if not self._translation_pending:
+            return
+
+        self._translation_pending = False
+        self.translation_status.setText(f"{self.translator.language_name(lang_code)} bereit")
+        self.language_combo.setEnabled(True)
+
+        # Zuerst Settings speichern, DANN UI aktualisieren
+        self.apply_settings()
+        self.update_translations()
+
+        QTimer.singleShot(2000, self.translation_status.hide)
+
     def update_translations(self) -> None:
-        self.layout().itemAt(0).widget().setText(self.translator.t("settings_title"))
+        self.title_label.setText(self.translator.t("settings_title"))
         self.tabs.setTabText(0, self.translator.t("settings_tab_general"))
         self.tabs.setTabText(1, self.translator.t("settings_tab_audio"))
-        self.tabs.widget(0).layout().itemAt(0).widget().setText(self.translator.t("language_label"))
+        self.language_label.setText(self.translator.t("language_label"))
         self.master_label.setText(self.translator.t("master_volume"))
         self.music_label.setText(self.translator.t("music_volume"))
         self.back_button.setText(self.translator.t("back"))
         self._populate_languages()
 
     def apply_settings(self) -> None:
-        """Speichert die aktuellen Einstellungen."""
-        from .settings import save_settings
         settings = get_settings()
-        settings["master_volume"] = self.master_slider.value()
-        settings["music_volume"] = self.music_slider.value()
-        lang_code = self.language_combo.currentData()
-        if lang_code:
-            settings["language"] = lang_code
-        save_settings(settings)
+        settings.set("master_volume", self.master_slider.value())
+        settings.set("music_volume", self.music_slider.value())
+        # Sprache direkt vom Translator lesen, nicht aus Combo (die könnte resettet sein)
+        settings.set("language", self.translator.language)

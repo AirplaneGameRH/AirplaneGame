@@ -18,7 +18,7 @@ from PyQt6.QtWidgets import (
     QGraphicsBlurEffect,
 )
 import time
-from .i18n import Translator
+from .i18n import init_translator
 from .loading_screen import LoadingScreen
 from .menu_screen import MenuScreen, SettingsScreen
 from .core import GameLogic, AirportRenderer, AssetManager
@@ -34,7 +34,9 @@ def main(app=None):
     # Lade persistente Einstellungen
     settings = get_settings()
     saved_language = settings.get("language", "de")
-    translator = Translator(saved_language)
+    
+    # Erstelle Translator als globale Instanz (Google Translate, kein API-Key nötig)
+    translator = init_translator(saved_language)
     
     # Lade Lautstärke-Einstellungen
     saved_master_volume = settings.get_int("master_volume", 100)
@@ -117,9 +119,6 @@ def main(app=None):
             )
             window.menu_screen.settings_button.clicked.connect(lambda: show_settings())
             window.settings_screen.back_button.clicked.connect(lambda: show_menu())
-            window.settings_screen.language_combo.currentIndexChanged.connect(
-                lambda _: language_changed()
-            )
 
             def apply_volumes() -> None:
                 master = window.settings_screen.master_volume / 100.0
@@ -257,17 +256,6 @@ def main(app=None):
         def show_placeholder(window_obj: UIManager, text: str) -> None:
             window_obj.placeholder_label.setText(text)
             window_obj.stack.setCurrentWidget(window_obj.placeholder_screen)
-
-        def language_changed() -> None:
-            language_code = window.settings_screen.language_combo.currentData()
-            if language_code:
-                translator.set_language(language_code)
-                window.menu_screen.translator = translator
-                window.settings_screen.translator = translator
-                window.menu_screen.update_translations()
-                window.settings_screen.update_translations()
-                # Speichere Spracheinstellung
-                window.settings_screen.apply_settings()
 
         timer = QTimer()
         timer.timeout.connect(show_main_ui)
