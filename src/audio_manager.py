@@ -17,17 +17,32 @@ class BackgroundMusic:
         self._player.setAudioOutput(self._audio_output)
         self._player.setLoops(QMediaPlayer.Loops.Infinite)
         self._audio_output.setVolume(volume)
+        self._loaded = False
 
-        music_path = SOUNDS_DIR / "Backgroundmusic.mp3"
-        if music_path.exists():
-            self._player.setSource(QUrl.fromLocalFile(str(music_path)))
-        else:
-            print(f"Warnung: Musikdatei nicht gefunden: {music_path}")
+        # Versuche verschiedene gängige Audioformate
+        audio_files = [
+            SOUNDS_DIR / "Backgroundmusic.mp3",
+            SOUNDS_DIR / "Backgroundmusic.ogg",
+            SOUNDS_DIR / "Backgroundmusic.wav",
+            SOUNDS_DIR / "backgroundmusic.mp3",
+            SOUNDS_DIR / "backgroundmusic.ogg",
+            SOUNDS_DIR / "backgroundmusic.wav",
+        ]
+
+        for music_path in audio_files:
+            if music_path.exists():
+                self._player.setSource(QUrl.fromLocalFile(str(music_path)))
+                self._loaded = True
+                print(f"Audio geladen: {music_path}")
+                break
+
+        if not self._loaded:
+            print("Warnung: Keine Hintergrundmusik-Datei gefunden in", SOUNDS_DIR)
             self._player = None
 
     def play(self) -> None:
         """Startet die Wiedergabe in Dauerschleife."""
-        if self._player is not None:
+        if self._player is not None and self._loaded:
             self._player.play()
 
     def stop(self) -> None:

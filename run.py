@@ -40,11 +40,19 @@ def _configure_qt():
     """Konfiguriert Qt für plattformübergreifendes Verhalten."""
     if QApplication.instance() is None:
         from PyQt6.QtCore import Qt
+        import os
 
+        # High DPI Scaling (Qt6 hat dies standardmäßig aktiviert, aber explizit setzen schadet nicht)
         if hasattr(Qt.ApplicationAttribute, "AA_EnableHighDpiScaling"):
             QApplication.setAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling, True)
         if hasattr(Qt.ApplicationAttribute, "AA_UseHighDpiPixmaps"):
             QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps, True)
+
+        # Linux/Wayland: Force X11 backend falls Wayland Probleme macht
+        if platform.system() == "Linux":
+            if os.environ.get("XDG_SESSION_TYPE") == "wayland":
+                # Qt auf Wayland kann Probleme mit Fullscreen haben
+                os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
 
 
 def _launch_with_pythonw():

@@ -40,10 +40,19 @@ class BackgroundWidget(QWidget):
         self.background_pixmap = None
         self.scaled_pixmap = None
         
-        # Lade Wallpaper.png
-        wallpaper_path = IMAGES_DIR / "Wallpaper.png"
-        if wallpaper_path.exists():
-            self.background_pixmap = QPixmap(str(wallpaper_path))
+        # Lade Wallpaper.png (case-insensitive fallback für Linux)
+        wallpaper_candidates = [
+            IMAGES_DIR / "Wallpaper.png",
+            IMAGES_DIR / "wallpaper.png",
+            IMAGES_DIR / "Wallpaper.jpg",
+            IMAGES_DIR / "wallpaper.jpg",
+            IMAGES_DIR / "background.png",
+            IMAGES_DIR / "Background.png",
+        ]
+        for wallpaper_path in wallpaper_candidates:
+            if wallpaper_path.exists():
+                self.background_pixmap = QPixmap(str(wallpaper_path))
+                break
 
     def resizeEvent(self, event):
         """Skaliere das Hintergrundbild bei Größenänderung."""

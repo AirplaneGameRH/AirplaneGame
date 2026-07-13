@@ -24,12 +24,21 @@ from .menu_screen import MenuScreen, SettingsScreen
 from .core import GameLogic, AirportRenderer, AssetManager
 from .ui_manager import UIManager, BackgroundWidget
 from .audio_manager import BackgroundMusic
+from .settings import get_settings
 
 
 def main(app=None):
     """Erzeugt das Hauptfenster und gibt es zurück."""
     app = app or QApplication.instance() or QApplication([])
-    translator = Translator()
+    
+    # Lade persistente Einstellungen
+    settings = get_settings()
+    saved_language = settings.get("language", "de")
+    translator = Translator(saved_language)
+    
+    # Lade Lautstärke-Einstellungen
+    saved_master_volume = settings.get_int("master_volume", 100)
+    saved_music_volume = settings.get_int("music_volume", 30)
 
     try:
         start_time = time.time()
@@ -95,6 +104,11 @@ def main(app=None):
 
             window.menu_screen = MenuScreen(translator, parent=window)
             window.settings_screen = SettingsScreen(translator, parent=window)
+            # Wende gespeicherte Lautstärke-Einstellungen an
+            window.settings_screen.master_volume = saved_master_volume
+            window.settings_screen.music_volume = saved_music_volume
+            window.settings_screen.master_slider.setValue(saved_master_volume)
+            window.settings_screen.music_slider.setValue(saved_music_volume)
             window.menu_screen.new_game_button.clicked.connect(
                 lambda: show_placeholder(window, translator.t("game_placeholder_new"))
             )
@@ -112,6 +126,8 @@ def main(app=None):
                 music = window.settings_screen.music_volume / 100.0
                 if window.background_music is not None:
                     window.background_music.set_volume(master * music)
+                # Speichere Lautstärke-Einstellungen
+                window.settings_screen.apply_settings()
 
             window.settings_screen.master_slider.valueChanged.connect(
                 lambda v: (setattr(window.settings_screen, "master_volume", v), apply_volumes())
@@ -181,12 +197,10 @@ def main(app=None):
             window.stack.setCurrentWidget(window.menu_screen)
 
             # Starte die Hintergrundmusik in Dauerschleife
-            window.background_music = BackgroundMusic(volume=0.3)
+            master_vol = saved_master_volume / 100.0
+            music_vol = saved_music_volume / 100.0
+            window.background_music = BackgroundMusic(volume=master_vol * music_vol)
             window.background_music.play()
-            window.settings_screen.master_volume = 100
-            window.settings_screen.music_volume = 30
-            window.settings_screen.master_slider.setValue(100)
-            window.settings_screen.music_slider.setValue(30)
 
             # Starte Game Loop Timer
             window.game_timer = QTimer()
@@ -252,6 +266,8 @@ def main(app=None):
                 window.settings_screen.translator = translator
                 window.menu_screen.update_translations()
                 window.settings_screen.update_translations()
+                # Speichere Spracheinstellung
+                window.settings_screen.apply_settings()
 
         timer = QTimer()
         timer.timeout.connect(show_main_ui)

@@ -106,10 +106,17 @@ class LoadingScreen(QWidget):
         self.translator = translator or Translator()
         self.background_pixmap = None
 
-        # Lade Hintergrundbild
-        airplane_image = IMAGES_DIR / "AirplaneGame.png"
-        if airplane_image.exists():
-            self.background_pixmap = QPixmap(str(airplane_image))
+        # Lade Hintergrundbild (case-insensitive fallback für Linux)
+        airplane_candidates = [
+            IMAGES_DIR / "AirplaneGame.png",
+            IMAGES_DIR / "airplanegame.png",
+            IMAGES_DIR / "AirplaneGameICO.png",
+            IMAGES_DIR / "airplanegameico.png",
+        ]
+        for airplane_image in airplane_candidates:
+            if airplane_image.exists():
+                self.background_pixmap = QPixmap(str(airplane_image))
+                break
 
         self.setStyleSheet("background-color: #1a1a1a;")
 

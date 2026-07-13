@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
 )
 
 from .i18n import Translator
+from .settings import get_settings, save_settings
 
 
 class MenuScreen(QWidget):
@@ -68,8 +69,9 @@ class SettingsScreen(QWidget):
     def __init__(self, translator: Translator, parent=None):
         super().__init__(parent)
         self.translator = translator
-        self.master_volume = 100
-        self.music_volume = 30
+        settings = get_settings()
+        self.master_volume = settings.get("master_volume", 100)
+        self.music_volume = settings.get("music_volume", 30)
         self._create_ui()
 
     def _create_ui(self) -> None:
@@ -187,9 +189,11 @@ class SettingsScreen(QWidget):
         self.language_combo.blockSignals(True)
         try:
             self.language_combo.clear()
+            settings = get_settings()
+            saved_lang = settings.get("language", self.translator.language)
             for code in self.translator.available_languages():
                 self.language_combo.addItem(self.translator.language_name(code), code)
-            current_index = self.translator.available_languages().index(self.translator.language)
+            current_index = self.translator.available_languages().index(saved_lang)
             self.language_combo.setCurrentIndex(current_index)
         finally:
             self.language_combo.blockSignals(False)
@@ -203,3 +207,14 @@ class SettingsScreen(QWidget):
         self.music_label.setText(self.translator.t("music_volume"))
         self.back_button.setText(self.translator.t("back"))
         self._populate_languages()
+
+    def apply_settings(self) -> None:
+        """Speichert die aktuellen Einstellungen."""
+        from .settings import save_settings
+        settings = get_settings()
+        settings["master_volume"] = self.master_slider.value()
+        settings["music_volume"] = self.music_slider.value()
+        lang_code = self.language_combo.currentData()
+        if lang_code:
+            settings["language"] = lang_code
+        save_settings(settings)
