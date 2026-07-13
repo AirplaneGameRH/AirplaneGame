@@ -46,37 +46,37 @@ class Aircraft:
         self.operating_cost = operating_cost
         self.metadata = metadata or {}
 
-    def board_passengers(self, count: int = 0) -> None:
+    def board_passengers(self, count: int = 0) -> Aircraft:
         """Lädt Passagiere an Bord."""
-        return None
+        return self
 
-    def load_cargo(self, amount: float = 0.0) -> None:
+    def load_cargo(self, amount: float = 0.0) -> Aircraft:
         """Lädt Fracht auf das Flugzeug."""
-        return None
+        return self
 
-    def refuel(self, amount: Optional[float] = None) -> None:
+    def refuel(self, amount: Optional[float] = None) -> Aircraft:
         """Betankt das Flugzeug."""
-        return None
+        return self
 
-    def start_flight(self, destination: Optional[str] = None) -> None:
+    def start_flight(self, destination: Optional[str] = None) -> Aircraft:
         """Startet einen Flug."""
-        return None
+        return self
 
-    def land(self) -> None:
+    def land(self) -> Aircraft:
         """Lässt das Flugzeug landen."""
-        return None
+        return self
 
-    def enter_maintenance(self) -> None:
+    def enter_maintenance(self) -> Aircraft:
         """Versetzt das Flugzeug in Wartung."""
-        return None
+        return self
 
-    def repair(self) -> None:
+    def repair(self) -> Aircraft:
         """Repariert das Flugzeug."""
-        return None
+        return self
 
-    def update(self) -> None:
+    def update(self) -> Aircraft:
         """Aktualisiert den Zustand des Flugzeugs."""
-        return None
+        return self
 
     def to_dict(self) -> Dict[str, Any]:
         """Gibt eine einfache Serienform zurück."""

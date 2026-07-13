@@ -38,37 +38,43 @@ class Airport:
         self.status = status
         self.metadata = metadata or {}
 
-    def add_aircraft(self, aircraft: Any) -> None:
+    def add_aircraft(self, aircraft: Any) -> Airport:
         """Fügt dem Flughafen ein Flugzeug hinzu."""
-        return None
+        self.aircraft.append(aircraft)
+        return self
 
-    def remove_aircraft(self, aircraft: Any) -> None:
+    def remove_aircraft(self, aircraft: Any) -> Airport:
         """Entfernt ein Flugzeug vom Flughafen."""
-        return None
+        if aircraft in self.aircraft:
+            self.aircraft.remove(aircraft)
+        return self
 
-    def add_flight(self, flight: Any) -> None:
+    def add_flight(self, flight: Any) -> Airport:
         """Plant einen neuen Flug für den Flughafen."""
-        return None
+        self.flights.append(flight)
+        return self
 
-    def remove_flight(self, flight: Any) -> None:
+    def remove_flight(self, flight: Any) -> Airport:
         """Entfernt einen Flug aus dem Flughafenplan."""
-        return None
+        if flight in self.flights:
+            self.flights.remove(flight)
+        return self
 
-    def open_gate(self, gate_id: Optional[str] = None) -> None:
+    def open_gate(self, gate_id: Optional[str] = None) -> Airport:
         """Öffnet einen Gate."""
-        return None
+        return self
 
-    def close_gate(self, gate_id: Optional[str] = None) -> None:
+    def close_gate(self, gate_id: Optional[str] = None) -> Airport:
         """Schließt einen Gate."""
-        return None
+        return self
 
-    def schedule_maintenance(self, aircraft: Any) -> None:
+    def schedule_maintenance(self, aircraft: Any) -> Airport:
         """Plant Wartung für ein Flugzeug."""
-        return None
+        return self
 
-    def update(self) -> None:
+    def update(self) -> Airport:
         """Aktualisiert den Flughafenstatus."""
-        return None
+        return self
 
     def to_dict(self) -> Dict[str, Any]:
         """Gibt eine einfache Serienform zurück."""

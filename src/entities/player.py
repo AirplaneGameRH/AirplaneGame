@@ -30,45 +30,64 @@ class Player:
         self.stats = stats or {}
         self.metadata = metadata or {}
 
-    def add_money(self, amount: float = 0.0) -> None:
+    def add_money(self, amount: float = 0.0) -> Player:
         """Erhöht das Geld des Spielers."""
-        return None
+        self.money += amount
+        return self
 
-    def spend_money(self, amount: float = 0.0) -> None:
+    def spend_money(self, amount: float = 0.0) -> Player:
         """Verringert das Geld des Spielers."""
-        return None
+        self.money = max(0.0, self.money - amount)
+        return self
 
-    def add_aircraft(self, aircraft: Any) -> None:
+    def add_aircraft(self, aircraft: Any) -> Player:
         """Fügt der Flotte ein Flugzeug hinzu."""
-        return None
+        self.fleet.append(aircraft)
+        return self
 
-    def remove_aircraft(self, aircraft: Any) -> None:
+    def remove_aircraft(self, aircraft: Any) -> Player:
         """Entfernt ein Flugzeug aus der Flotte."""
-        return None
+        if aircraft in self.fleet:
+            self.fleet.remove(aircraft)
+        return self
 
-    def unlock_aircraft(self, aircraft_name: str) -> None:
+    def unlock_aircraft(self, aircraft_name: str) -> Player:
         """Schaltet ein Flugzeug frei."""
-        return None
+        if aircraft_name not in self.unlocked_aircraft:
+            self.unlocked_aircraft.append(aircraft_name)
+        return self
 
-    def add_airport(self, airport: Any) -> None:
+    def add_airport(self, airport: Any) -> Player:
         """Fügt dem Spieler einen Flughafen hinzu."""
-        return None
+        self.airports.append(airport)
+        return self
 
-    def remove_airport(self, airport: Any) -> None:
+    def remove_airport(self, airport: Any) -> Player:
         """Entfernt einen Flughafen vom Spieler."""
-        return None
+        if airport in self.airports:
+            self.airports.remove(airport)
+        return self
 
-    def update_stats(self) -> None:
+    def update_stats(self) -> Player:
         """Aktualisiert Spielerstatistiken."""
-        return None
+        return self
 
     def save_state(self) -> Dict[str, Any]:
         """Erstellt einen gespeicherten Zustand."""
         return self.to_dict()
 
-    def load_state(self, state: Dict[str, Any]) -> None:
+    def load_state(self, state: Dict[str, Any]) -> Player:
         """Lädt einen gespeicherten Zustand."""
-        return None
+        self.id = state.get("id", self.id)
+        self.name = state.get("name", self.name)
+        self.money = state.get("money", self.money)
+        self.reputation = state.get("reputation", self.reputation)
+        self.fleet = state.get("fleet", self.fleet)
+        self.airports = state.get("airports", self.airports)
+        self.unlocked_aircraft = state.get("unlocked_aircraft", self.unlocked_aircraft)
+        self.stats = state.get("stats", self.stats)
+        self.metadata = state.get("metadata", self.metadata)
+        return self
 
     def to_dict(self) -> Dict[str, Any]:
         """Gibt eine einfache Serienform zurück."""

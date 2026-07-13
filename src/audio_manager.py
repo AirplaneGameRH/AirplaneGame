@@ -22,6 +22,7 @@ class BackgroundMusic:
         if music_path.exists():
             self._player.setSource(QUrl.fromLocalFile(str(music_path)))
         else:
+            print(f"Warnung: Musikdatei nicht gefunden: {music_path}")
             self._player = None
 
     def play(self) -> None:
@@ -36,4 +37,5 @@ class BackgroundMusic:
 
     def set_volume(self, volume: float) -> None:
         """Setzt die Lautstärke (0.0 - 1.0)."""
-        self._audio_output.setVolume(max(0.0, min(1.0, volume)))
+        if self._audio_output is not None:
+            self._audio_output.setVolume(max(0.0, min(1.0, volume)))

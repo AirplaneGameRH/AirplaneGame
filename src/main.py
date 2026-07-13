@@ -25,6 +25,7 @@ from .core import GameLogic, AirportRenderer, AssetManager
 from .ui_manager import UIManager, BackgroundWidget
 from .audio_manager import BackgroundMusic
 
+
 def main(app=None):
     """Erzeugt das Hauptfenster und gibt es zurück."""
     app = app or QApplication.instance() or QApplication([])
@@ -32,6 +33,7 @@ def main(app=None):
 
     try:
         start_time = time.time()
+        # Erstelle UIManager im Loading-Modus (ohne GameLogic/Renderer/Assets)
         window = UIManager(None, None, None, loading_mode=True)
         window.translator = translator
 
@@ -57,6 +59,7 @@ def main(app=None):
         loading_screen.set_progress(70)
         app.processEvents()
         game = GameLogic()
+        game.start_game()
 
         window.game_logic = game
         window.renderer = renderer
@@ -73,6 +76,13 @@ def main(app=None):
 
             timer.stop()
             window.set_fullscreen()
+
+            # UI-Komponenten erstellen (nutzt die bereits initialisierten game_logic, renderer, assets)
+            if window.dashboard is None:
+                from .widgets import DashboardWidget, ControlPanelWidget, StatusPanelWidget
+                window.dashboard = DashboardWidget()
+                window.control_panel = ControlPanelWidget()
+                window.status_panel = StatusPanelWidget()
 
             # Erstelle BackgroundWidget mit Wallpaper
             bg_widget = BackgroundWidget()
@@ -148,6 +158,15 @@ def main(app=None):
             quit_layout.setContentsMargins(20, 0, 20, 20)
             content_layout.addLayout(quit_layout, 0)  # stretch=0: nimmt minimal Platz
 
+            # UI-Komponenten zum Stack hinzufügen (als Game-Screen)
+            window.game_screen = QWidget()
+            game_layout = QVBoxLayout(window.game_screen)
+            game_layout.setContentsMargins(20, 20, 20, 20)
+            game_layout.addWidget(window.dashboard)
+            game_layout.addWidget(window.control_panel)
+            game_layout.addWidget(window.status_panel)
+            window.stack.addWidget(window.game_screen)
+
             # Hintergrund und Inhalt überlagern (beide füllen den Bildschirm)
             central = QWidget()
             grid = QGridLayout(central)
@@ -168,7 +187,46 @@ def main(app=None):
             window.settings_screen.music_volume = 30
             window.settings_screen.master_slider.setValue(100)
             window.settings_screen.music_slider.setValue(30)
+
+            # Starte Game Loop Timer
+            window.game_timer = QTimer()
+            window.game_timer.timeout.connect(lambda: game_loop(window))
+            window.game_timer.start(100)  # 10 FPS
+
             return False
+
+        def game_loop(window_obj: UIManager) -> None:
+            """Hauptspielschleife - wird alle 100ms aufgerufen."""
+            if window_obj.game_logic and window_obj.game_logic.running:
+                window_obj.game_logic.update(0.1)
+                state = window_obj.game_logic.get_game_state()
+                
+                # Update Dashboard
+                if window_obj.dashboard:
+                    window_obj.dashboard.update_stats(
+                        money=state["money"],
+                        reputation=state["reputation"],
+                        aircraft_count=state["aircraft_count"],
+                        active_flights=state["active_flights"],
+                        fuel_percent=100.0  # TODO: proper fuel tracking
+                    )
+                
+                # Update Renderer
+                if window_obj.renderer:
+                    window_obj.renderer.set_airport(window_obj.game_logic.airport)
+                    window_obj.renderer.set_aircraft(window_obj.game_logic.aircraft)
+                    window_obj.renderer.set_flights(window_obj.game_logic.flights)
+                    window_obj.renderer.update_display()
+                
+                # Update Status Panel
+                if window_obj.status_panel:
+                    for flight in window_obj.game_logic.flights:
+                        if flight.status == "in_progress":
+                            window_obj.status_panel.add_flight(
+                                flight.flight_number, 
+                                flight.status, 
+                                getattr(flight, 'progress', 0.0)
+                            )
 
         def show_menu() -> None:
             window.menu_screen.update_translations()
@@ -206,7 +264,6 @@ def main(app=None):
 
         traceback.print_exc()
         raise
-
 
 
 

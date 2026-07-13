@@ -44,25 +44,26 @@ class Flight:
         self.priority = priority
         self.metadata = metadata or {}
 
-    def start(self) -> None:
+    def start(self) -> Flight:
         """Startet den Flug."""
-        return None
+        return self
 
-    def cancel(self) -> None:
+    def cancel(self) -> Flight:
         """Bricht den Flug ab."""
-        return None
+        return self
 
-    def complete(self) -> None:
+    def complete(self) -> Flight:
         """Schließt den Flug ab."""
-        return None
+        return self
 
-    def update_progress(self) -> None:
+    def update_progress(self) -> Flight:
         """Aktualisiert den Fortschritt des Fluges."""
-        return None
+        return self
 
-    def assign_aircraft(self, aircraft: Any) -> None:
+    def assign_aircraft(self, aircraft: Any) -> Flight:
         """Weist dem Flug ein Flugzeug zu."""
         self.aircraft = aircraft
+        return self
 
     def to_dict(self) -> Dict[str, Any]:
         """Gibt eine einfache Serienform zurück."""
