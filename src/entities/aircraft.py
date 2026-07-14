@@ -48,34 +48,60 @@ class Aircraft:
 
     def board_passengers(self, count: int = 0) -> Aircraft:
         """Lädt Passagiere an Bord."""
+        boarded = min(count, self.passenger_capacity)
+        self.metadata["passengers_onboard"] = boarded
         return self
 
     def load_cargo(self, amount: float = 0.0) -> Aircraft:
         """Lädt Fracht auf das Flugzeug."""
+        loaded = min(amount, self.cargo_capacity)
+        self.metadata["cargo_onboard"] = loaded
         return self
 
     def refuel(self, amount: Optional[float] = None) -> Aircraft:
         """Betankt das Flugzeug."""
+        if amount is None:
+            amount = self.max_fuel - self.fuel
+        self.fuel = min(self.max_fuel, self.fuel + max(0.0, amount))
         return self
 
     def start_flight(self, destination: Optional[str] = None) -> Aircraft:
         """Startet einen Flug."""
+        self.status = "in_flight"
+        if destination:
+            self.current_airport = None
+            self.current_flight = destination
+            self.metadata["destination"] = destination
         return self
 
     def land(self) -> Aircraft:
         """Lässt das Flugzeug landen."""
+        self.status = "landed"
+        self.current_flight = None
+        self.metadata.pop("destination", None)
         return self
 
     def enter_maintenance(self) -> Aircraft:
         """Versetzt das Flugzeug in Wartung."""
+        self.status = "maintenance"
+        self.current_flight = None
         return self
 
     def repair(self) -> Aircraft:
         """Repariert das Flugzeug."""
+        self.condition = 100.0
+        self.maintenance_level = 100.0
+        if self.status == "maintenance":
+            self.status = "parked"
         return self
 
     def update(self) -> Aircraft:
-        """Aktualisiert den Zustand des Flugzeugs."""
+        """Aktualisiert den Zustand des Flugzeugs (z. B. Wartungsverfall)."""
+        if self.status == "in_flight":
+            self.condition = max(0.0, self.condition - 0.1)
+            self.maintenance_level = max(0.0, self.maintenance_level - 0.05)
+        elif self.status == "parked":
+            self.maintenance_level = min(100.0, self.maintenance_level + 0.1)
         return self
 
     def to_dict(self) -> Dict[str, Any]:

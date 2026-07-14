@@ -81,12 +81,12 @@ class AssetManager:
         if resolved not in self.search_paths:
             self.search_paths.append(resolved)
 
-def clear_cache(self) -> None:
+    def clear_cache(self) -> None:
         """Leert alle gecachten Assets."""
         self._texture_cache.clear()
         self._mesh_cache.clear()
 
-def load_texture(self, asset_name: Union[str, Path]) -> TextureAsset:
+    def load_texture(self, asset_name: Union[str, Path]) -> TextureAsset:
         """Lädt eine Textur aus einer Datei oder über den Suchpfad."""
         key = str(asset_name)
         if key in self._texture_cache:
@@ -114,7 +114,7 @@ def load_texture(self, asset_name: Union[str, Path]) -> TextureAsset:
         self._texture_cache[key] = texture
         return texture
 
-def load_mesh(self, asset_name: Union[str, Path]) -> MeshAsset:
+    def load_mesh(self, asset_name: Union[str, Path]) -> MeshAsset:
         """Lädt ein 3D-Mesh aus OBJ, STL, PLY, GLTF, GLB oder DAE."""
         key = str(asset_name)
         if key in self._mesh_cache:
@@ -144,19 +144,19 @@ def load_mesh(self, asset_name: Union[str, Path]) -> MeshAsset:
         self._mesh_cache[key] = mesh
         return mesh
 
-def get_texture(self, asset_name: Union[str, Path]) -> Optional[TextureAsset]:
+    def get_texture(self, asset_name: Union[str, Path]) -> Optional[TextureAsset]:
         try:
             return self.load_texture(asset_name)
         except (FileNotFoundError, ImportError):
             return None
 
-def get_mesh(self, asset_name: Union[str, Path]) -> Optional[MeshAsset]:
+    def get_mesh(self, asset_name: Union[str, Path]) -> Optional[MeshAsset]:
         try:
             return self.load_mesh(asset_name)
         except (FileNotFoundError, ValueError):
             return None
 
-def _resolve_path(self, asset_name: Union[str, Path], extensions: Sequence[str]) -> Optional[Path]:
+    def _resolve_path(self, asset_name: Union[str, Path], extensions: Sequence[str]) -> Optional[Path]:
         candidate = Path(asset_name).expanduser()
         if candidate.is_absolute():
             if candidate.exists():
@@ -175,7 +175,7 @@ def _resolve_path(self, asset_name: Union[str, Path], extensions: Sequence[str])
                     return path.resolve()
         return None
 
-def _candidate_paths(self, base: Path, candidate: Path, extensions: Sequence[str]) -> List[Path]:
+    def _candidate_paths(self, base: Path, candidate: Path, extensions: Sequence[str]) -> List[Path]:
         paths: List[Path] = []
         if candidate.suffix:
             paths.extend([base / candidate, base / candidate.name])
@@ -186,7 +186,7 @@ def _candidate_paths(self, base: Path, candidate: Path, extensions: Sequence[str
                 paths.append(base / candidate / f"{candidate.name}{ext}")
         return paths
 
-def _parse_obj(self, path: Path) -> MeshAsset:
+    def _parse_obj(self, path: Path) -> MeshAsset:
         vertices: List[Tuple[float, float, float]] = []
         normals: List[Tuple[float, float, float]] = []
         texcoords: List[Tuple[float, float]] = []
@@ -215,7 +215,7 @@ def _parse_obj(self, path: Path) -> MeshAsset:
 
         return MeshAsset(path=path, name=path.stem, vertices=vertices, normals=normals, texcoords=texcoords, faces=faces, format="obj")
 
-def _parse_stl(self, path: Path) -> MeshAsset:
+    def _parse_stl(self, path: Path) -> MeshAsset:
         data = path.read_bytes()
         if data.startswith(b"solid"):
             vertices: List[Tuple[float, float, float]] = []
@@ -246,7 +246,7 @@ def _parse_stl(self, path: Path) -> MeshAsset:
             faces.append((len(vertices) - 3, len(vertices) - 2, len(vertices) - 1))
         return MeshAsset(path=path, name=path.stem, vertices=vertices, faces=faces, format="stl")
 
-def _parse_ply(self, path: Path) -> MeshAsset:
+    def _parse_ply(self, path: Path) -> MeshAsset:
         text = path.read_text(encoding="utf-8")
         lines = [line.strip() for line in text.splitlines() if line.strip()]
         vertices: List[Tuple[float, float, float]] = []
@@ -277,7 +277,7 @@ def _parse_ply(self, path: Path) -> MeshAsset:
                     faces.append(tuple(int(value) for value in values[1:4]))
         return MeshAsset(path=path, name=path.stem, vertices=vertices, faces=faces, format="ply")
 
-def _parse_gltf(self, path: Path) -> MeshAsset:
+    def _parse_gltf(self, path: Path) -> MeshAsset:
         if trimesh is not None:
             mesh = trimesh.load(path, force="mesh")
             if hasattr(mesh, "vertices") and hasattr(mesh, "faces"):
@@ -308,7 +308,7 @@ def _parse_gltf(self, path: Path) -> MeshAsset:
                 faces = []
         return MeshAsset(path=path, name=path.stem, vertices=vertices, faces=faces, format="gltf")
 
-def _parse_dae(self, path: Path) -> MeshAsset:
+    def _parse_dae(self, path: Path) -> MeshAsset:
         tree = ET.parse(path)
         root = tree.getroot()
         vertices: List[Tuple[float, float, float]] = []

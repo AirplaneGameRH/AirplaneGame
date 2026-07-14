@@ -68,8 +68,9 @@ class Player:
             self.airports.remove(airport)
         return self
 
-    def update_stats(self) -> Player:
+    def update_stats(self, **kwargs: Any) -> Player:
         """Aktualisiert Spielerstatistiken."""
+        self.stats.update(kwargs)
         return self
 
     def save_state(self) -> Dict[str, Any]:
@@ -96,8 +97,8 @@ class Player:
             "name": self.name,
             "money": self.money,
             "reputation": self.reputation,
-            "fleet": self.fleet,
-            "airports": self.airports,
+            "fleet": [a.to_dict() if hasattr(a, "to_dict") else str(a) for a in self.fleet],
+            "airports": [a.to_dict() if hasattr(a, "to_dict") else str(a) for a in self.airports],
             "unlocked_aircraft": self.unlocked_aircraft,
             "stats": self.stats,
             "metadata": self.metadata,

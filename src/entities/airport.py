@@ -37,6 +37,8 @@ class Airport:
         self.economy = economy
         self.status = status
         self.metadata = metadata or {}
+        self._gate_usage: Dict[int, bool] = {}
+        self._runway_usage: Dict[int, bool] = {}
 
     def add_aircraft(self, aircraft: Any) -> Airport:
         """Fügt dem Flughafen ein Flugzeug hinzu."""
@@ -60,20 +62,50 @@ class Airport:
             self.flights.remove(flight)
         return self
 
-    def open_gate(self, gate_id: Optional[str] = None) -> Airport:
+    def open_gate(self, gate_id: Optional[int] = None) -> Airport:
         """Öffnet einen Gate."""
+        if gate_id is not None:
+            self._gate_usage[gate_id] = False
         return self
 
-    def close_gate(self, gate_id: Optional[str] = None) -> Airport:
+    def close_gate(self, gate_id: Optional[int] = None) -> Airport:
         """Schließt einen Gate."""
+        if gate_id is not None:
+            self._gate_usage[gate_id] = True
         return self
+
+    def get_available_gate(self) -> Optional[int]:
+        """Gibt einen freien Gate zurück."""
+        for i in range(1, self.gates + 1):
+            if not self._gate_usage.get(i, False):
+                return i
+        return None
+
+    def get_available_runway(self) -> Optional[int]:
+        """Gibt eine freie Startbahn zurück."""
+        for i in range(1, self.runways + 1):
+            if not self._runway_usage.get(i, False):
+                return i
+        return None
 
     def schedule_maintenance(self, aircraft: Any) -> Airport:
         """Plant Wartung für ein Flugzeug."""
+        aircraft.enter_maintenance()
         return self
 
     def update(self) -> Airport:
         """Aktualisiert den Flughafenstatus."""
+        waiting_flights = [f for f in self.flights if getattr(f, "status", "") == "scheduled"]
+        for flight in waiting_flights:
+            aircraft = getattr(flight, "aircraft", None)
+            if aircraft and aircraft.status == "parked" and aircraft.fuel > 0:
+                gate = self.get_available_gate()
+                runway = self.get_available_runway()
+                if gate and runway:
+                    flight.start()
+                    aircraft.start_flight(flight.destination)
+                    self._gate_usage[gate] = True
+                    self._runway_usage[runway] = True
         return self
 
     def to_dict(self) -> Dict[str, Any]:
