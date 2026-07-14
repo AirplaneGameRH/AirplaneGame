@@ -75,6 +75,7 @@ class SettingsScreen(QWidget):
         self.music_volume = settings.get("music_volume", 30)
         self._translation_pending = False
         self._signal_connected = False
+        self._pending_language = None
         self._create_ui()
 
     def _create_ui(self) -> None:
@@ -106,13 +107,30 @@ class SettingsScreen(QWidget):
 
         layout.addStretch()
 
+        button_row = QHBoxLayout()
+        button_row.setSpacing(16)
+
+        self.save_button = QPushButton(self.translator.t("save"))
+        self.save_button.setFixedSize(170, 52)
+        self.save_button.setEnabled(False)
+        self.save_button.setStyleSheet(
+            "QPushButton { background-color: #2196F3; color: white; border-radius: 10px; font-size: 18px; }"
+            "QPushButton:hover { background-color: #1e88e5; }"
+            "QPushButton:disabled { background-color: #555; color: #999; }"
+        )
+        self.save_button.clicked.connect(self._save_settings)
+
         self.back_button = QPushButton(self.translator.t("back"))
         self.back_button.setFixedSize(170, 52)
         self.back_button.setStyleSheet(
             "QPushButton { background-color: #4CAF50; color: white; border-radius: 10px; font-size: 18px; }"
             "QPushButton:hover { background-color: #45a049; }"
         )
-        layout.addWidget(self.back_button, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        button_row.addWidget(self.save_button)
+        button_row.addWidget(self.back_button)
+        button_row.addStretch()
+        layout.addLayout(button_row)
 
     def _create_general_tab(self) -> QWidget:
         tab = QWidget()
@@ -217,13 +235,45 @@ class SettingsScreen(QWidget):
             return
 
         lang_code = self.language_combo.itemData(index)
-        if not lang_code or lang_code == self.translator.language:
+        if not lang_code:
             return
 
+        if lang_code == self.translator.language:
+            self._pending_language = None
+            self.save_button.setEnabled(False)
+            self.translation_status.setText("")
+            self.translation_status.hide()
+            return
+
+        # Sprache nur merken, aber NOCH NICHT aktivieren.
+        # Sie wird erst über "Speichern" übernommen.
+        self._pending_language = lang_code
+        self.translator.preload_language(lang_code)
+        self.save_button.setEnabled(True)
+        self.translation_status.setText(self.translator.t("language_apply_hint"))
+        self.translation_status.show()
+
+    def _save_settings(self) -> None:
+        self.save_settings()
+
+    def save_settings(self) -> None:
+        """Speichert Lautstärke und aktiviert ggf. die ausgewählte Sprache."""
+        settings = get_settings()
+        settings.set("master_volume", self.master_slider.value())
+        settings.set("music_volume", self.music_slider.value())
+
+        if not self._pending_language or self._pending_language == self.translator.language:
+            self.translation_status.setText(self.translator.t("settings_saved"))
+            self.translation_status.show()
+            QTimer.singleShot(2000, self.translation_status.hide)
+            return
+
+        lang_code = self._pending_language
         self._translation_pending = True
         self.translation_status.setText(f"Lade {self.translator.language_name(lang_code)}...")
         self.translation_status.show()
         self.language_combo.setEnabled(False)
+        self.save_button.setEnabled(False)
 
         if not self._signal_connected:
             self.translator.language_changed.connect(self._on_language_ready)
@@ -236,13 +286,15 @@ class SettingsScreen(QWidget):
             return
 
         self._translation_pending = False
-        self.translation_status.setText(f"{self.translator.language_name(lang_code)} bereit")
+        self._pending_language = None
         self.language_combo.setEnabled(True)
+        self.save_button.setEnabled(False)
 
         # Zuerst Settings speichern, DANN UI aktualisieren
         self.apply_settings()
         self.update_translations()
 
+        self.translation_status.setText(f"{self.translator.language_name(lang_code)} aktiviert")
         QTimer.singleShot(2000, self.translation_status.hide)
 
     def update_translations(self) -> None:
@@ -253,7 +305,9 @@ class SettingsScreen(QWidget):
         self.master_label.setText(self.translator.t("master_volume"))
         self.music_label.setText(self.translator.t("music_volume"))
         self.back_button.setText(self.translator.t("back"))
+        self.save_button.setText(self.translator.t("save"))
         self._populate_languages()
+        self.save_button.setEnabled(self._pending_language is not None)
 
     def apply_settings(self) -> None:
         settings = get_settings()

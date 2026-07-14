@@ -36,6 +36,11 @@ BASE_GERMAN_TEXTS: Dict[str, str] = {
     "master_volume": "Gesamtlautstärke",
     "music_volume": "Musik",
 
+    # Settings actions
+    "save": "Speichern",
+    "settings_saved": "Einstellungen gespeichert",
+    "language_apply_hint": "Auf 'Speichern' klicken, um die Sprache zu aktivieren",
+
     # Placeholders
     "game_placeholder_new": "Neues Spiel wird gestartet...",
     "game_placeholder_load": "Spiel wird geladen...",

@@ -118,7 +118,12 @@ def main(app=None):
                 lambda: show_placeholder(window, translator.t("game_placeholder_load"))
             )
             window.menu_screen.settings_button.clicked.connect(lambda: show_settings())
-            window.settings_screen.back_button.clicked.connect(lambda: show_menu())
+
+            def on_back() -> None:
+                window.settings_screen.save_settings()
+                show_menu()
+
+            window.settings_screen.back_button.clicked.connect(on_back)
 
             def apply_volumes() -> None:
                 master = window.settings_screen.master_volume / 100.0

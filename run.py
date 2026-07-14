@@ -55,8 +55,24 @@ def _configure_qt():
                 os.environ.setdefault("QT_QPA_PLATFORM", "xcb")
 
 
+def _redirect_streams_if_needed():
+    """Unter pythonw (Windows ohne Konsole) sind stdout/stderr None.
+
+    print()-Aufrufe (z. B. im Translator) würden sonst mit einem
+    ValueError abstürzen. Daher leiten wir die Streams nach devnull um.
+    """
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, "w", encoding="utf-8")
+
+
 def _launch_with_pythonw():
-    """Startet die GUI auf Windows über pythonw, damit die Taskleiste das eigene Icon nutzt."""
+    """Startet die GUI auf Windows über pythonw, damit die Taskleiste das eigene Icon nutzt.
+
+    os.execv ist unter Windows fehleranfällig, daher wird ein neuer Prozess
+    per subprocess gestartet und der aktuelle sauber beendet.
+    """
     if platform.system() != "Windows":
         return False
 
@@ -68,16 +84,22 @@ def _launch_with_pythonw():
     if not pythonw_exe.exists():
         return False
 
-    os.execv(str(pythonw_exe), [str(pythonw_exe), str(Path(__file__).resolve()), *sys.argv[1:]])
+    import subprocess
+
+    subprocess.Popen(
+        [str(pythonw_exe), str(Path(__file__).resolve()), *sys.argv[1:]],
+        close_fds=True,
+    )
     return True
 
 
 def run_game():
     """Erzeugt die Qt-Anwendung und zeigt das Hauptfenster an."""
-    _set_windows_taskbar_icon()
     if _launch_with_pythonw():
         return 0
 
+    _set_windows_taskbar_icon()
+    _redirect_streams_if_needed()
     _configure_qt()
     app = QApplication.instance() or QApplication(sys.argv)
     app.setApplicationName("AirplaneGame")
