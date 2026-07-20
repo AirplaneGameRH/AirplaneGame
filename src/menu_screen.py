@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
+    QProgressBar,
     QPushButton,
     QSlider,
     QTabWidget,
@@ -45,6 +46,7 @@ class MenuScreen(QWidget):
         self.new_game_button = QPushButton(self.translator.t("new_game"))
         self.load_game_button = QPushButton(self.translator.t("load_game"))
         self.settings_button = QPushButton(self.translator.t("settings"))
+        self.quit_button = QPushButton(self.translator.t("quit"))
 
         for button in (self.new_game_button, self.load_game_button, self.settings_button):
             button.setFixedSize(240, 52)
@@ -54,6 +56,14 @@ class MenuScreen(QWidget):
             )
             layout.addWidget(button, alignment=Qt.AlignmentFlag.AlignLeft)
 
+        self.quit_button.setFixedSize(240, 52)
+        self.quit_button.setStyleSheet(
+            "QPushButton { background-color: #e94560; color: white; border-radius: 10px; font-size: 16px; }"
+            "QPushButton:hover { background-color: #d63850; }"
+        )
+        self.quit_button.clicked.connect(self.close_application)
+        layout.addWidget(self.quit_button, alignment=Qt.AlignmentFlag.AlignLeft)
+
         layout.addStretch()
 
     def update_translations(self) -> None:
@@ -62,6 +72,13 @@ class MenuScreen(QWidget):
         self.new_game_button.setText(self.translator.t("new_game"))
         self.load_game_button.setText(self.translator.t("load_game"))
         self.settings_button.setText(self.translator.t("settings"))
+        self.quit_button.setText(self.translator.t("quit"))
+
+    def close_application(self) -> None:
+        """Schließt die Anwendung."""
+        window = self.window()
+        if window:
+            window.close()
 
 
 class SettingsScreen(QWidget):
@@ -150,6 +167,17 @@ class SettingsScreen(QWidget):
             "QComboBox QAbstractItemView { background-color: #2d2d2d; color: white; font-size: 18px; }"
         )
         tab_layout.addWidget(self.language_combo, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        self.translation_progress = QProgressBar()
+        self.translation_progress.setMaximumWidth(300)
+        self.translation_progress.setFixedHeight(8)
+        self.translation_progress.setTextVisible(False)
+        self.translation_progress.setStyleSheet(
+            "QProgressBar { background-color: #2d2d2d; border-radius: 4px; border: none; }"
+            "QProgressBar::chunk { background-color: #4CAF50; border-radius: 4px; }"
+        )
+        self.translation_progress.hide()
+        tab_layout.addWidget(self.translation_progress, alignment=Qt.AlignmentFlag.AlignLeft)
 
         self.translation_status = QLabel("")
         self.translation_status.setStyleSheet("font-size: 14px; color: #888; margin-top: 8px;")
@@ -243,6 +271,7 @@ class SettingsScreen(QWidget):
             self.save_button.setEnabled(False)
             self.translation_status.setText("")
             self.translation_status.hide()
+            self.translation_progress.hide()
             return
 
         # Sprache nur merken, aber NOCH NICHT aktivieren.
@@ -252,6 +281,7 @@ class SettingsScreen(QWidget):
         self.save_button.setEnabled(True)
         self.translation_status.setText(self.translator.t("language_apply_hint"))
         self.translation_status.show()
+        self.translation_progress.show()
 
     def _save_settings(self) -> None:
         self.save_settings()
@@ -272,6 +302,7 @@ class SettingsScreen(QWidget):
         self._translation_pending = True
         self.translation_status.setText(f"Lade {self.translator.language_name(lang_code)}...")
         self.translation_status.show()
+        self.translation_progress.show()
         self.language_combo.setEnabled(False)
         self.save_button.setEnabled(False)
 
@@ -287,6 +318,7 @@ class SettingsScreen(QWidget):
 
         self._translation_pending = False
         self._pending_language = None
+        self.translation_progress.hide()
         self.language_combo.setEnabled(True)
         self.save_button.setEnabled(False)
 

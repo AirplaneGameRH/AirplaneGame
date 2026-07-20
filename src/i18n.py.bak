@@ -223,7 +223,7 @@ class Translator(QObject):
                 return text
         return text
 
-    def set_language(self, language: str) -> bool:
+def set_language(self, language: str) -> bool:
         """Setzt die Sprache und startet ggf. Übersetzung im Hintergrund."""
         if language not in LANGUAGE_NAMES:
             return False
@@ -245,6 +245,7 @@ class Translator(QObject):
 
     def _start_translation(self, target_lang: str) -> None:
         """Startet Hintergrund-Übersetzung via QThread."""
+        print(f"DEBUG: _start_translation called for {target_lang}", flush=True)
         # Wenn bereits ein Worker läuft, merke die neue Sprache
         if self._worker is not None and self._worker.isRunning():
             self._pending_language = target_lang
@@ -258,13 +259,15 @@ class Translator(QObject):
             except (TypeError, RuntimeError):
                 pass
 
-        # _pending_language behalten (wurde von set_language gesetzt)
+        self._pending_language = None
         self._worker = TranslationWorker(self._api, BASE_GERMAN_TEXTS, target_lang)
         self._worker.finished.connect(self._on_translation_finished)
         self._worker.error.connect(self._on_translation_error)
+        print(f"DEBUG: Starting worker for {target_lang}", flush=True)
         self._worker.start()
 
     def _on_translation_finished(self, target_lang: str, translated: dict) -> None:
+        print(f"DEBUG: _on_translation_finished called for {target_lang}", flush=True)
         self._cache[target_lang] = translated
 
         # Sprache jetzt aktiv setzen
@@ -278,6 +281,7 @@ class Translator(QObject):
             self._pending_language = None
             self._start_translation(pending)
         else:
+            print(f"DEBUG: Emitting language_changed for {target_lang}", flush=True)
             self.language_changed.emit(target_lang)
 
     def _on_translation_error(self, target_lang: str, error_msg: str) -> None:
