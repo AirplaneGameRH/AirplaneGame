@@ -111,7 +111,7 @@ LANGUAGE_NAMES: Dict[str, str] = {
     "pt": "Português",
     "pl": "Polski",
     "ru": "Русский",
-    "zh": "中文",
+    "zh-CH": "中文",
     "ja": "日本語",
     "ko": "한국어",
 }
